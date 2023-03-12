@@ -1,0 +1,76 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  width: 300px;
+  box-sizing: content-box;
+  margin: 10px;
+  padding: 20px 10px;
+  background-color: #DFEEF5;
+  box-shadow: 2px 2px 4px gray;
+  font-family: futura-pt-bold;
+  letter-spacing: 1.6px;
+  line-height: 200%;
+}
+
+.card h3 {
+  font-size: 40px;
+}
+
+.emoji {
+  /* Styles for the emoji span */
+}
+
+.contribution {
+  /* Styles for the contribution paragraph */
+}
+
+.socials {
+  /* Styles for the socials paragraph */
+}
+
+.github-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.favouriteSeaAnimal {
+  /* Styles for the favourite sea animal paragraph */
+}
+
+.title {
+  /* Styles for the title element */
+}
+
+.contributors-page {
+  /* Styles for the contributors-page element */
+}
+
+.contributors {
+  /* Styles for the contributors list */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.card-wrapper {
+  flex-basis: 25%;
+}
+.metric {
+  --radius: 24px;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  margin-block-end: 16px; /* scrollbar */
+  padding-block: var(--block);
+  padding-inline: var(--inline);
+  border-radius: var(--radius);
+  background-image: var(--background);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: var(--white, white);
+  width: 350px;
+}

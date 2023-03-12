@@ -3,113 +3,122 @@ import { render, screen } from "@testing-library/react";
 import Contributors from "./Contributors";
 import React from "react";
 import "@testing-library/jest-dom";
-import fetch from "node-fetch";
 
-// fake API call
-const fakeAPICall = (request) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      switch (request.method) {
-        case "get":
-          const data = [
-            ["name1", "contribution1", "socials1", "favouriteSeaAnimal1", "hi"],
-            [
-              "name2",
-              "contribution2",
-              "socials2",
-              "favouriteSeaAnimal2",
-              "bye",
-            ],
-          ];
-          resolve({ status: 200, data });
-          break;
-        default:
-          resolve({ status: 400, message: "Bad Request" });
-      }
-    }, 300);
+// mocking the fetch method
+// https://www.leighhalliday.com/mock-fetch-jest
+global.fetch = jest.fn(() => {
+  return Promise.resolve({
+    json: () =>
+      Promise.resolve({
+        records: [
+          {
+            id: 1,
+            fields: {
+              emoji: "🧑",
+              Name: "John Doe",
+              "Contribution Type": "testing",
+              "GitHub/Social": "@JohnDoe",
+              "Favorite Sea Animal": "sea animal",
+            },
+          },
+        ],
+      }),
   });
-};
+});
 
-// TODO
-// 1. api endpointtest
-// 2. mock fetch in front UI tests
-describe.skip("Contributors", () => {
+async function fetchFromAPI() {
+  const apiKey =
+    "patZqW6kq6eJpR1rr.af975adfba875ba01c385ff086a6712767221ea337eac18af43624d004685335";
+  const baseId = "appnTJyNgaBLsKObm";
+  const tableName = "Contributors";
+
+  return await fetch(`https://api.airtable.com/v0/${baseId}/${tableName}`, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+  }).then((res) => res.json());
+}
+
+describe("Contributors", () => {
   describe("API endpoint", () => {
     test("respond with an array", async () => {
-      // TODO: fetch from API point and test
-      const data = await fakeAPICall({ method: "get" });
-      expect(Array.isArray(data.data)).toBeTruthy();
+      const data = await fetchFromAPI(); // fetch is replaced by mock function
+
+      expect(Array.isArray(data.records)).toBeTruthy();
     });
+
     test("should be an array of objects", async () => {
-      const data = await fakeAPICall({ method: "get" });
-      expect(data.data.length).toBe(2);
+      const data = await fetchFromAPI();
+
+      expect(data.records.length).toBe(1);
     });
-    test("should contain the correct data", async () => {});
+    test("should contain the correct data", async () => {
+      const data = await fetchFromAPI();
+      expect(data.records[0]).toEqual({
+        id: 1,
+        fields: {
+          emoji: "🧑",
+          Name: "John Doe",
+          "Contribution Type": "testing",
+          "GitHub/Social": "@JohnDoe",
+          "Favorite Sea Animal": "sea animal",
+        },
+      });
+    });
   });
 
   describe("Frontend UI", () => {
-    test("should include a title named Contributors", () => {
-      // TODO: to mock the API fetch
-
+    test("should include a title named Contributors", async () => {
       render(<Contributors />);
 
-      const text = screen.getByRole("heading", {
+      const heading = await screen.findByRole("heading", {
         name: /contributors/i,
       });
-      expect(text).toBeInTheDocument();
     });
     test("should display a name", async () => {
       render(<Contributors />);
 
-      const data = await fakeAPICall({ method: "get" });
-
-      const name = screen.getByRole("heading", {
-        name: new RegExp(data.data[0][0]),
+      const name = await screen.findByRole("heading", {
+        name: /contributor-name/i,
       });
 
       expect(name).toBeInTheDocument();
-      expect(name).toHaveTextContent("name1");
+      expect(name).toHaveTextContent(/john doe/i);
     });
     test("should display a contribution", async () => {
       render(<Contributors />);
-      const data = await fakeAPICall({ method: "get" });
-      const contribution = screen.getByTestId("contribution", {
-        name: new RegExp(data.data[0][1]),
-      });
 
-      expect(contribution).toBeInTheDocument();
-      expect(contribution).toHaveTextContent("contribution1");
+      const contributionType = await screen.findByTestId("contributor-type");
+
+      expect(contributionType).toBeInTheDocument();
+      expect(contributionType).toHaveTextContent("testing");
     });
 
     test("should display a favourite sea animal", async () => {
       render(<Contributors />);
-      const data = await fakeAPICall({ method: "get" });
-      const favouriteSeaAnimal = screen.getByTestId("favouriteSeaAnimal", {
-        name: new RegExp(data.data[0][2]),
-      });
+
+      const favouriteSeaAnimal = await screen.findByTestId(
+        "contributor-favorite-sea-animal"
+      );
 
       expect(favouriteSeaAnimal).toBeInTheDocument();
-      expect(favouriteSeaAnimal).toHaveTextContent("favouriteSeaAnimal1");
+      expect(favouriteSeaAnimal).toHaveTextContent("sea animal");
     });
-    test("should display a social url", async () => {
+    test("should display social", async () => {
       render(<Contributors />);
-      const data = await fakeAPICall({ method: "get" });
-      const social = screen.getByTestId("social", {
-        name: new RegExp(data.data[0][3]),
-      });
+
+      const social = await screen.findByTestId("contributor-socials");
 
       expect(social).toBeInTheDocument();
-      expect(social).toHaveTextContent("socials1");
+      expect(social).toHaveTextContent("@JohnDoe");
     });
     test("should display a emoji", async () => {
       render(<Contributors />);
-      const data = await fakeAPICall({ method: "get" });
-      const emoji = screen.getByTestId("emoji", {
-        name: new RegExp(data.data[0][4]),
-      });
+
+      const emoji = await screen.findByTestId("contributor-emoji");
 
       expect(emoji).toBeInTheDocument();
-      expect(emoji).toHaveTextContent("hi");
+      expect(emoji).toHaveTextContent("🧑");
     });
   });
 });
